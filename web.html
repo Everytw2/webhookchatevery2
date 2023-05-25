@@ -1,0 +1,112 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <title>Webhook Chat</title>
+  <style>
+    #messageContainer {
+      width: 400px;
+      height: 500px;
+      border: 1px solid #ccc;
+      overflow-y: scroll;
+      padding: 10px;
+      margin-top: 20px;
+    }
+    
+    #madeBy {
+      position: fixed;
+      bottom: 10px;
+      right: 10px;
+      font-size: 12px;
+      color: #999;
+    }
+  </style>
+  <script>
+    window.onload = function() {
+      localStorage.removeItem("webhookUsername");
+      localStorage.removeItem("webhookURL");
+    };
+
+    function setWebhookURL() {
+      var webhookUsername = document.getElementById("webhookUsernameInput").value;
+      var webhookURL = document.getElementById("webhookInput").value;
+      
+      if (webhookUsername.trim() === "" || webhookURL.trim() === "") {
+        alert("Please enter both the webhook username and URL.");
+        return;
+      }
+
+      localStorage.setItem("webhookUsername", webhookUsername);
+      localStorage.setItem("webhookURL", webhookURL);
+
+      document.getElementById("setupContainer").style.display = "none";
+      document.getElementById("chatContainer").style.display = "block";
+    }
+
+    function sendMessage(event) {
+      if (event.keyCode === 13 || event.which === 13) { // Enter key
+        var message = document.getElementById("messageInput").value;
+        var webhookUsername = localStorage.getItem("webhookUsername");
+        var webhookURL = localStorage.getItem("webhookURL");
+        
+        if (message.trim() === "") {
+          alert("Please enter a message.");
+          return;
+        }
+
+        var request = new XMLHttpRequest();
+        request.open("POST", webhookURL);
+
+        var params = {
+          username: webhookUsername,
+          content: message
+        };
+
+        request.setRequestHeader("Content-type", "application/json");
+        request.send(JSON.stringify(params));
+
+        document.getElementById("messageInput").value = "";
+
+        var messageContainer = document.getElementById("messageContainer");
+        var newMessage = document.createElement("p");
+        newMessage.textContent = "You: " + message;
+        messageContainer.appendChild(newMessage);
+      }
+    }
+  </script>
+</head>
+<body>
+  <div id="setupContainer">
+    <h1>Webhook Chat Setup</h1>
+    <div>
+      <input type="text" id="webhookUsernameInput" placeholder="Enter the webhook username..." />
+    </div>
+    <div>
+      <input type="text" id="webhookInput" placeholder="Enter the webhook URL..." />
+    </div>
+    <div>
+      <button onclick="setWebhookURL()">Submit</button>
+    </div>
+  </div>
+
+  <div id="chatContainer" style="display: none;">
+    <h1>Webhook Chat</h1>
+    <div id="messageContainer"></div>
+    <div>
+      <input type="text" id="messageInput" placeholder="Type your message..." onkeydown="sendMessage(event)" />
+      <button onclick="sendMessage(event)">Send</button>
+    </div>
+  </div>
+  
+  <div id="madeBy">Made by Everytwo</div>
+  
+  <script>
+    var storedWebhookUsername = localStorage.getItem("webhookUsername");
+    var storedWebhookURL = localStorage.getItem("webhookURL");
+
+    if (storedWebhookUsername && storedWebhookURL) {
+      document.getElementById("setupContainer").style.display = "none";
+      document.getElementById("chatContainer").style.display = "block";
+    }
+  </script>
+</body>
+</html>
